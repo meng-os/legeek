@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iOS App 分发中心</title>
+    <!-- 引入 Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card {
+            margin: 20px auto;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .install-btn {
+            background: linear-gradient(45deg, #007AFF, #00C7FF);
+            border: none;
+            transition: transform 0.2s;
+        }
+        .install-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <h1 class="text-center mb-4">应用下载中心</h1>
+        
+        <!-- 版本列表容器 -->
+        <div id="versionList"></div>
+
+        <!-- 安装说明 -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">安装说明</h5>
+                <ol>
+                    <li>点击对应版本的安装按钮</li>
+                    <li>在弹出的提示中点击「安装」</li>
+                    <li>回到手机主屏幕等待下载完成</li>
+                    <li>如果提示「未受信任」，请到 设置 > 通用 > VPN与设备管理 中信任证书</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 版本数据配置
+        const dataVersions = [
+            {
+                version: "1.2.0",
+                build: "20230801",
+                date: "2023-08-01",
+                plistPath: "https://YOUR_GITHUB_USERNAME.github.io/REPO_NAME/manifest/v1.2.0.plist"
+            },
+            {
+                version: "1.1.5",
+                build: "20230715",
+                date: "2023-07-15",
+                plistPath: "https://YOUR_GITHUB_USERNAME.github.io/REPO_NAME/manifest/v1.1.5.plist"
+            }
+        ];
+
+        // 动态生成版本卡片
+        function renderVersions() {
+            const container = document.getElementById('versionList');
+            
+            dataVersions.forEach(version => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="card-title">版本 ${version.version}</h5>
+                                <p class="text-muted mb-1">
+                                    Build: ${version.build} | 发布日期: ${version.date}
+                                </p>
+                            </div>
+                            <button 
+                                class="btn btn-primary install-btn px-4 py-2 rounded-pill"
+                                onclick="installApp('${version.plistPath}')"
+                            >
+                                安装
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // 触发安装
+        function installApp(plistUrl) {
+            // 标准的 itms-services 协议调用
+            const installUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(plistUrl)}`;
+            
+            // 创建隐藏的 iframe 触发安装（iOS 15+ 必须）
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = installUrl;
+            document.body.appendChild(iframe);
+            
+            // 自动移除 iframe
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 5000);
+        }
+
+        // 初始化渲染
+        renderVersions();
+    </script>
+</body>
+</html>
